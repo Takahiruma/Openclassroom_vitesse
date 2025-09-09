@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">Vitesse</string>
+
+    <!-- Strings used for fragments for navigation -->
+    <string name="home_fragment_label">Home</string>
+    <string name="details_fragment_label">Details</string>
+    <string name="create_fragment_label">Create</string>
+
+    <string name="action_save">Save</string>
+
+    <string name="description_button_add">Add</string>
+    <string name="description_button_delete">Delete</string>
+    <string name="description_button_edit">Edit</string>
+
+    <string name="contentDescription_go_back">Go back</string>
+    <string name="contentDescription_avatar" translatable="false">Avatar</string>
+
+    <string name="issue_first_name_empty">The first name must not be empty</string>
+    <string name="issue_last_name_empty">The last name must not be empty</string>
+    <string name="issue_date_of_birth_invalid">The date of birth is not valid</string>
+    <string name="issue_email_empty">The email must not be empty</string>
+    <string name="issue_email_invalid">The email is not valid</string>
+    <string name="Empty_candidate_list">No candidate</string>
+    <string name="Search">Search</string>
+    <string name="Tab_Favorite">Favorite</string>
+    <string name="Tab_All">All</string>
+    <string name="issue_invalid_salary">Salary is not valid</string>
+</resources>

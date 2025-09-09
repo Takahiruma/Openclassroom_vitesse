@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Vitesse</string>
+    <string name="create_fragment_label">Ajouter</string>
+    <string name="action_save">Sauvegarder</string>
+    <string name="home_fragment_label">Accueil</string>
+    <string name="details_fragment_label">Détails</string>
+    <string name="description_button_add">Ajouter</string>
+    <string name="description_button_delete">Supprimer</string>
+    <string name="description_button_edit">Modifier</string>
+    <string name="contentDescription_go_back">Revenir en arrière</string>
+    <string name="issue_first_name_empty">Le prénom ne doit pas être vide</string>
+    <string name="issue_last_name_empty">Le nom ne doit pas être vide</string>
+    <string name="issue_date_of_birth_invalid">La date de naissance n\\\'est pas valide</string>
+    <string name="issue_email_empty">L\\\'email ne doit pas être vide</string>
+    <string name="issue_email_invalid">L\\\'email n\\\'est pas valide</string>
+    <string name="Empty_candidate_list">Aucun candidat</string>
+    <string name="Search">Rechercher un candidat</string>
+    <string name="Tab_Favorite">Favoris</string>
+    <string name="Tab_All">Tous</string>
+    <string name="issue_invalid_salary">Le salaire n\'est pas valide</string>
+</resources>

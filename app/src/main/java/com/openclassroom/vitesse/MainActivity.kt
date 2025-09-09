@@ -2,6 +2,7 @@ package com.openclassroom.vitesse
 
 import CandidateViewModel
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -15,11 +16,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.openclassroom.vitesse.data.Candidate
 import com.openclassroom.vitesse.repository.CandidateRepository
@@ -40,19 +43,18 @@ class MainActivity : ComponentActivity() {
                 val viewModel: CandidateViewModel = viewModel(
                     factory = CandidateViewModelFactory(CandidateRepository())
                 )
+                val currentBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentDestination = currentBackStackEntry?.destination
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    topBar = {
-                        TopAppBar(
-                            title = { Text(stringResource(id = R.string.app_name)) }
-                        )
-                    },
                     floatingActionButton = {
-                        FloatingActionButton(
-                            onClick = { navController.navigate("addCandidateScreen") }
-                        ) {
-                            Icon(Icons.Default.Add, contentDescription = "Ajouter un candidat")
+                        if (currentDestination?.route != "AddCandidateScreen") {
+                            FloatingActionButton(
+                                onClick = { navController.navigate("addCandidateScreen") }
+                            ) {
+                                Icon(Icons.Default.Add, contentDescription = "Ajouter un candidat")
+                            }
                         }
                     }
                 ) { paddingValues ->
@@ -71,8 +73,12 @@ class MainActivity : ComponentActivity() {
                                     navController.popBackStack()
                                 },
                                 onSaveClick = { candidate ->
-                                    viewModel.addCandidate(candidate)
-                                    navController.popBackStack()
+                                    try {
+                                        viewModel.addCandidate(candidate)
+                                        navController.popBackStack()
+                                    } catch (e: Exception) {
+                                        Log.e("SaveError", "Erreur lors de la sauvegarde: ", e)
+                                    }
                                 },
                                 modifier = Modifier,
                             )

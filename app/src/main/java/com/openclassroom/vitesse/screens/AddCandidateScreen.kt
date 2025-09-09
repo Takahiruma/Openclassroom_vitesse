@@ -1,11 +1,19 @@
 package com.openclassroom.vitesse.screens
 
+import android.app.DatePickerDialog
 import android.content.Context
+import android.net.Uri
+import android.provider.MediaStore
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -28,17 +36,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.openclassroom.vitesse.data.Candidate
 import com.openclassroom.vitesse.R
+import com.openclassroom.vitesse.data.Candidate
 import com.openclassroom.vitesse.data.CandidateData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -87,6 +100,12 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
                             dateOfBirth.value, email.value, note.value, salary.value,
                             snackbarHostState, scope, context)
                     ) {
+                        val savedPhotoPath = photo.value.let { uriString ->
+                            val uri = Uri.parse(uriString)
+                            saveImageToInternalStorage(context, uri) ?: uriString
+                        }
+                        photo.value = savedPhotoPath
+                        
                         val currentCandidate = Candidate(
                             photo = photo.value,
                             firstName = firstName.value,
@@ -121,6 +140,25 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
             dateOfBirth = dateOfBirth.value,
             onDateOfBirthChanged = { dateOfBirth.value = it }
         )
+    }
+}
+
+fun saveImageToInternalStorage(context: Context, imageUri: Uri): String? {
+    return try {
+        val inputStream = context.contentResolver.openInputStream(imageUri)
+        val filename = "candidate_${System.currentTimeMillis()}.jpg"
+        val file = File(context.filesDir, filename)
+        val outputStream = FileOutputStream(file)
+
+        inputStream?.use { input ->
+            outputStream.use { output ->
+                input.copyTo(output)
+            }
+        }
+        file.absolutePath
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
     }
 }
 
@@ -223,6 +261,51 @@ fun CreateCandidate(
     onDateOfBirthChanged: (Long) -> Unit
 ) {
     val scrollState = rememberScrollState()
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            onPhotoChanged(it.toString())
+        }
+    }
+
+    val photoUri = remember(photo) {
+        if (photo.isNotEmpty()) android.net.Uri.parse(photo) else null
+    }
+
+    val bitmap = remember(photoUri) {
+        photoUri?.let {
+            try {
+                MediaStore.Images.Media.getBitmap(context.contentResolver, it)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                null
+            }
+        }
+    }
+
+
+    val calendar = Calendar.getInstance()
+
+    if (dateOfBirth > 0) {
+        calendar.timeInMillis = dateOfBirth
+    }
+
+    val year = calendar.get(Calendar.YEAR)
+    val month = calendar.get(Calendar.MONTH)
+    val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+    val datePickerDialog = remember {
+        DatePickerDialog(
+            context,
+            { _, selectedYear, selectedMonth, selectedDay ->
+                val selectedCalendar = Calendar.getInstance().apply {
+                    set(selectedYear, selectedMonth, selectedDay)
+                }
+                onDateOfBirthChanged(selectedCalendar.timeInMillis)
+            },
+            year, month, day
+        )
+    }
 
     Column(
         modifier = modifier
@@ -230,16 +313,28 @@ fun CreateCandidate(
             .fillMaxSize()
             .verticalScroll(scrollState)
     ) {
-        OutlinedTextField(
+        Box(
             modifier = Modifier
-                .padding(top = 16.dp)
-                .fillMaxWidth(),
-            value = photo,
-            onValueChange = onPhotoChanged,
-            label = { Text("Photo URL") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-            singleLine = true
-        )
+                .size(120.dp)
+                .clickable {
+                    launcher.launch("image/*")
+                }
+        ) {
+            if (bitmap != null) {
+                Image(
+                    bitmap = bitmap.asImageBitmap(),
+                    contentDescription = "Photo du candidat",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = R.drawable.no_image_available),
+                    contentDescription = "No image available",
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
         OutlinedTextField(
             modifier = Modifier
                 .padding(top = 16.dp)
@@ -270,17 +365,25 @@ fun CreateCandidate(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
             singleLine = true
         )
+
         OutlinedTextField(
             modifier = Modifier
                 .padding(top = 16.dp)
                 .fillMaxWidth(),
-            value = note,
-            onValueChange = onNoteChanged,
-            label = { Text("Note") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            singleLine = false,
-            maxLines = 3
+            value = if (dateOfBirth > 0) SimpleDateFormat("yyyy-MM-dd").format(Date(dateOfBirth)) else "",
+            onValueChange = { /* read only */ },
+            label = { Text("Date de naissance") },
+            readOnly = true,
+            trailingIcon = {
+                IconButton(onClick = {
+                    datePickerDialog.show()
+                }) {
+                    Icon(Icons.Default.DateRange, contentDescription = "Choisir date")
+                }
+            }
         )
+
+
         OutlinedTextField(
             modifier = Modifier
                 .padding(top = 16.dp)
@@ -292,20 +395,17 @@ fun CreateCandidate(
             singleLine = true
         )
 
+
         OutlinedTextField(
             modifier = Modifier
                 .padding(top = 16.dp)
                 .fillMaxWidth(),
-            value = if (dateOfBirth > 0) SimpleDateFormat("yyyy-MM-dd").format(Date(dateOfBirth)) else "",
-            onValueChange = { },
-            label = { Text("Date de naissance") },
-            readOnly = true,
-            trailingIcon = {
-                IconButton(onClick = {
-                }) {
-                    Icon(Icons.Default.DateRange, contentDescription = "Choisir date")
-                }
-            }
+            value = note,
+            onValueChange = onNoteChanged,
+            label = { Text("Note") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            singleLine = false,
+            maxLines = 3
         )
     }
 }

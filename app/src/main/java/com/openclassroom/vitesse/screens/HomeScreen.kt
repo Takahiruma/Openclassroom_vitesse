@@ -1,5 +1,8 @@
 package com.openclassroom.vitesse.screens
 
+import android.graphics.BitmapFactory
+import android.net.Uri
+import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -14,6 +17,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -108,29 +114,9 @@ fun CandidateItem(candidate: Candidate) {
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val context = LocalContext.current
-        val drawableId = remember(candidate.photo) {
-            if(candidate.photo.isEmpty()) {
-                context.resources.getIdentifier(
-                    "no_image_available",
-                    "drawable",
-                    context.packageName
-                )
-            } else {
-                context.resources.getIdentifier(
-                    candidate.photo,
-                    "drawable",
-                    context.packageName
-                )
-            }
-        }
-        Image(
-            modifier = Modifier
-                .width(54.dp)
-                .height(54.dp),
-            painter = painterResource(drawableId),
-            contentDescription = stringResource(id = R.string.contentDescription_avatar)
-        )
+
+        CandidateImage(photoUriString = candidate.photo)
+        
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = "${candidate.firstName} ${candidate.lastName}",
@@ -141,6 +127,39 @@ fun CandidateItem(candidate: Candidate) {
                 style = MaterialTheme.typography.bodyMedium
             )
         }
+    }
+}
+
+@Composable
+fun CandidateImage(photoUriString: String) {
+    val context = LocalContext.current
+    val bitmap = remember(photoUriString) {
+        try {
+            if (photoUriString.isNotEmpty()) {
+                val uri = Uri.parse(photoUriString)
+                context.contentResolver.openInputStream(uri).use { stream ->
+                    BitmapFactory.decodeStream(stream)
+                }
+            } else null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    if (bitmap != null) {
+        Image(
+            bitmap = bitmap.asImageBitmap(),
+            contentDescription = "candidate picture",
+            modifier = Modifier.size(54.dp),
+            contentScale = ContentScale.Crop
+        )
+    } else {
+        Image(
+            painter = painterResource(R.drawable.no_image_available),
+            contentDescription = "No image",
+            modifier = Modifier.size(54.dp)
+        )
     }
 }
 

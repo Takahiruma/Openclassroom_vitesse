@@ -55,6 +55,8 @@ dependencies {
     implementation(libs.androidx.media3.effect)
     implementation(libs.ui.graphics)
     implementation(libs.ui)
+    implementation(libs.androidx.compose.ui.ui)
+    implementation(libs.androidx.foundation)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -62,4 +64,5 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation("androidx.compose.material:material-icons-extended:1.7.7")
 }

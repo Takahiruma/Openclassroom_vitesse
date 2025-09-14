@@ -3,8 +3,8 @@ package com.openclassroom.vitesse.data
 import java.util.Calendar
 
 object CandidateData {
-    val tempCandidate = Candidate(photo = "", firstName = "Jean", lastName =  "Luc", createCalendar(2020, 2, 1), "Ex@email.com", "Notes with a bit of text innit", 500.0)
-    val tempCandidate2 = Candidate(photo = "", firstName = "Kevin", lastName =  "Marlo", createCalendar(2020, 2, 1), "Ex@email.com", "Notes with a bit of text innit", 500.0)
+    val tempCandidate = Candidate(photo = "", firstName = "Jean", lastName =  "Luc", createCalendar(2020, 2, 1),"0612345678", "Ex@email.com", "Notes with a bit of text innit", 500.0)
+    val tempCandidate2 = Candidate(photo = "", firstName = "Kevin", lastName =  "Marlo", createCalendar(2020, 2, 1),"0692342377", "Ex@email.com", "Notes with a bit of text innit", 500.0)
     val Candidates: MutableList<Candidate> = mutableListOf(tempCandidate,tempCandidate2)
     val FavoriteCandidates: MutableList<Candidate> = mutableListOf()
 

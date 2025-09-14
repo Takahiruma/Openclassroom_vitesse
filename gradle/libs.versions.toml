@@ -14,6 +14,9 @@ foundationLayout = "1.9.0"
 media3Effect = "1.8.0"
 uiGraphics = "1.9.0"
 ui = "1.9.0"
+benchmarkTraceprocessor = "1.4.1"
+uiVersion = "1.9.1"
+foundation = "1.9.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -36,6 +39,9 @@ androidx-foundation-layout = { group = "androidx.compose.foundation", name = "fo
 androidx-media3-effect = { group = "androidx.media3", name = "media3-effect", version.ref = "media3Effect" }
 ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics", version.ref = "uiGraphics" }
 ui = { group = "androidx.compose.ui", name = "ui", version.ref = "ui" }
+androidx-benchmark-traceprocessor = { group = "androidx.benchmark", name = "benchmark-traceprocessor", version.ref = "benchmarkTraceprocessor" }
+androidx-compose-ui-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "uiVersion" }
+androidx-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -7,6 +7,7 @@ data class Candidate(
     val firstName: String,
     val lastName: String,
     val dateOfBirth: Calendar,
+    val phoneNumber: String,
     val email: String,
     val note: String,
     val salary: Double,

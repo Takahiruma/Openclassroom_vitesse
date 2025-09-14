@@ -25,4 +25,18 @@
     <string name="Tab_Favorite">Favorite</string>
     <string name="Tab_All">All</string>
     <string name="issue_invalid_salary">Salary is not valid</string>
+    <string name="issue_phone_number_empty">The phone number must not be empty</string>
+    <string name="issue_phone_number_invalide">The phone number is invalide</string>
+    <string name="phone_number">phone</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="notes" translatable="false">Notes</string>
+    <string name="salary">Salary Expectation</string>
+    <string name="date_of_birth">Select a date</string>
+    <string name="enter_date_of_birth">Enter a date</string>
+    <string name="mail_address" translatable="false">Email</string>
+    <string name="add_candidate">Add a candidate</string>
+    <string name="candidate_picture">Candidate\'s picture</string>
+    <string name="no_image_available">No image available</string>
+    <string name="issue_future_date">You cannot pick a date in the future</string>
 </resources>

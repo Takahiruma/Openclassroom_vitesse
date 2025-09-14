@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -38,52 +39,69 @@ import com.openclassroom.vitesse.R
 fun HomeScreen() {
     var selectedTab by remember { mutableStateOf(HomeTab.ALL) }
     var searchQuery by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(true) }
 
-    Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
-        TextField(
-            value = searchQuery,
-            onValueChange = { searchQuery = it },
-            placeholder = { Text(stringResource(R.string.Search)) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            singleLine = true,
-            shape = RoundedCornerShape(25.dp),
-            trailingIcon = {
-                Icon(imageVector = Icons.Default.Search, contentDescription = null)
-            },
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
+    Box(modifier = Modifier.fillMaxSize().statusBarsPadding().background(Color.White)) {
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+                color = MaterialTheme.colorScheme.primary
             )
-        )
-
-        TabRow(
-            selectedTabIndex = selectedTab.ordinal,
-            modifier = Modifier.fillMaxWidth(),
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        ) {
-            HomeTab.entries.forEach { tab ->
-                Tab(
-                    selected = selectedTab == tab,
-                    onClick = { selectedTab = tab },
-                    text = { Text(stringResource(tab.titleResId)) },
+        } else {
+            Column {
+                TextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text(stringResource(R.string.Search)) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    singleLine = true,
+                    shape = RoundedCornerShape(25.dp),
+                    trailingIcon = {
+                        Icon(imageVector = Icons.Default.Search, contentDescription = null)
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        disabledIndicatorColor = Color.Transparent,
+                    )
                 )
+
+                TabRow(
+                    selectedTabIndex = selectedTab.ordinal,
+                    modifier = Modifier.fillMaxWidth(),
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    HomeTab.entries.forEach { tab ->
+                        Tab(
+                            selected = selectedTab == tab,
+                            onClick = { selectedTab = tab },
+                            text = { Text(stringResource(tab.titleResId)) },
+                            modifier = Modifier.background(Color.White),
+                            selectedContentColor = MaterialTheme.colorScheme.primary,
+                            unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                val candidates = when (selectedTab) {
+                    HomeTab.ALL -> CandidateData.Candidates
+                    HomeTab.FAVORITE -> CandidateData.FavoriteCandidates
+                }.filter {
+                    it.firstName.contains(searchQuery, ignoreCase = true) ||
+                            it.lastName.contains(searchQuery, ignoreCase = true)
+                }
+
+                CandidateList(candidates = candidates)
             }
         }
+    }
 
-        // Calcul et filtrage avant affichage
-        val candidates = when (selectedTab) {
-            HomeTab.ALL -> CandidateData.Candidates
-            HomeTab.FAVORITE -> CandidateData.FavoriteCandidates
-        }.filter {
-            it.firstName.contains(searchQuery, ignoreCase = true) ||
-                    it.lastName.contains(searchQuery, ignoreCase = true)
-        }
-
-        CandidateList(candidates = candidates)
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(2000)
+        isLoading = false
     }
 
 }
@@ -116,7 +134,7 @@ fun CandidateItem(candidate: Candidate) {
     ) {
 
         CandidateImage(photoUriString = candidate.photo)
-        
+
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = "${candidate.firstName} ${candidate.lastName}",
@@ -188,6 +206,7 @@ fun CandidateItemPreview() {
                 photo = "",
                 firstName = "Alice",
                 lastName = "Dupont",
+                phoneNumber = "0612345678",
                 dateOfBirth = CandidateData.createCalendar(1990, 5, 15),
                 email = "alice.dupont@example.com",
                 note = "Excellent profil",

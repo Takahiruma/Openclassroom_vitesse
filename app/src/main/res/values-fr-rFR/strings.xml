@@ -9,18 +9,10 @@
     <string name="description_button_delete">Supprimer</string>
     <string name="description_button_edit">Modifier</string>
     <string name="contentDescription_go_back">Revenir en arrière</string>
-    <string name="issue_first_name_empty">Le prénom ne doit pas être vide</string>
-    <string name="issue_last_name_empty">Le nom ne doit pas être vide</string>
-    <string name="issue_date_of_birth_invalid">La date de naissance n\\\'est pas valide</string>
-    <string name="issue_email_empty">L\'email ne doit pas être vide</string>
-    <string name="issue_email_invalid">L\\\'email n\\\'est pas valide</string>
     <string name="Empty_candidate_list">Aucun candidat</string>
     <string name="Search">Rechercher un candidat</string>
     <string name="Tab_Favorite">Favoris</string>
     <string name="Tab_All">Tous</string>
-    <string name="issue_invalid_salary">Le salaire n\'est pas valide</string>
-    <string name="issue_phone_number_empty">Le numéro de téléphone ne doit pas être vide</string>
-    <string name="issue_phone_number_invalide">Le numéro de téléphone est invalide</string>
     <string name="phone_number">Téléphone</string>
     <string name="first_name">Prénom</string>
     <string name="last_name">Nom</string>
@@ -31,4 +23,6 @@
     <string name="candidate_picture">Photo du candidat</string>
     <string name="no_image_available">Pas d\'image disponible</string>
     <string name="issue_future_date">Vous ne pouvez pas choisir une date dans le futur</string>
+    <string name="mandatory_field">Champs obligatoire</string>
+    <string name="invalid_format">Format invalide</string>
 </resources>

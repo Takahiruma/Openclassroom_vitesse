@@ -270,26 +270,26 @@ fun verifyAndCreateCandidate(
 
     if (firstName.isBlank()) {
         firstNameError.value = true
-        firstNameErrorMessage.value = context.getString(R.string.issue_first_name_empty)
+        firstNameErrorMessage.value = context.getString(R.string.mandatory_field)
         isValid = false
     }
 
     if (lastName.isBlank()) {
         lastNameError.value = true
-        lastNameErrorMessage.value = context.getString(R.string.issue_last_name_empty)
+        lastNameErrorMessage.value = context.getString(R.string.mandatory_field)
         isValid = false
     }
 
     if (phoneNumber.isBlank()) {
         phoneNumberError.value = true
-        phoneNumberErrorMessage.value = context.getString(R.string.issue_phone_number_empty)
+        phoneNumberErrorMessage.value = context.getString(R.string.mandatory_field)
         isValid = false
     } else {
         val phoneRegex = Regex("^(0|\\+33|0033)[1-9](\\d{2}){4}$")
         val normalizedPhone = phoneNumber.replace("[\\s.-]".toRegex(), "")
         if (!phoneRegex.matches(normalizedPhone)) {
             phoneNumberError.value = true
-            phoneNumberErrorMessage.value = context.getString(R.string.issue_phone_number_invalide)
+            phoneNumberErrorMessage.value = context.getString(R.string.invalid_format)
             isValid = false
         }
     }
@@ -297,7 +297,7 @@ fun verifyAndCreateCandidate(
     val dateOfBirth: Calendar = Calendar.getInstance()
     if (dateOfBirthMillis <= 0) {
         dateOfBirthError.value = true
-        dateOfBirthErrorMessage.value = context.getString(R.string.issue_date_of_birth_invalid)
+        dateOfBirthErrorMessage.value = context.getString(R.string.mandatory_field)
         isValid = false
     } else {
         dateOfBirth.timeInMillis = dateOfBirthMillis
@@ -311,13 +311,13 @@ fun verifyAndCreateCandidate(
 
     if (email.isBlank()) {
         emailError.value = true
-        emailErrorMessage.value = context.getString(R.string.issue_email_empty)
+        emailErrorMessage.value = context.getString(R.string.mandatory_field)
         isValid = false
     } else {
         val emailPattern = Regex("^[\\w\\-.]+@[\\w\\-.]+\\.[a-zA-Z]{2,}$")
         if (!email.matches(emailPattern)) {
             emailError.value = true
-            emailErrorMessage.value = context.getString(R.string.issue_email_invalid)
+            emailErrorMessage.value = context.getString(R.string.invalid_format)
             isValid = false
         }
     }
@@ -327,12 +327,12 @@ fun verifyAndCreateCandidate(
         candidateSalary = salary.toDouble()
         if (candidateSalary < 0) {
             salaryError.value = true
-            salaryErrorMessage.value = context.getString(R.string.issue_invalid_salary)
+            salaryErrorMessage.value = context.getString(R.string.mandatory_field)
             isValid = false
         }
     } catch (e: NumberFormatException) {
         salaryError.value = true
-        salaryErrorMessage.value = context.getString(R.string.issue_invalid_salary)
+        salaryErrorMessage.value = context.getString(R.string.mandatory_field)
         isValid = false
         candidateSalary = 0.0
     }

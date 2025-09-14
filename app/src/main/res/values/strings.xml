@@ -15,18 +15,10 @@
     <string name="contentDescription_go_back">Go back</string>
     <string name="contentDescription_avatar" translatable="false">Avatar</string>
 
-    <string name="issue_first_name_empty">The first name must not be empty</string>
-    <string name="issue_last_name_empty">The last name must not be empty</string>
-    <string name="issue_date_of_birth_invalid">The date of birth is not valid</string>
-    <string name="issue_email_empty">The email must not be empty</string>
-    <string name="issue_email_invalid">The email is not valid</string>
     <string name="Empty_candidate_list">No candidate</string>
     <string name="Search">Search</string>
     <string name="Tab_Favorite">Favorite</string>
     <string name="Tab_All">All</string>
-    <string name="issue_invalid_salary">Salary is not valid</string>
-    <string name="issue_phone_number_empty">The phone number must not be empty</string>
-    <string name="issue_phone_number_invalide">The phone number is invalide</string>
     <string name="phone_number">phone</string>
     <string name="first_name">First Name</string>
     <string name="last_name">Last Name</string>
@@ -39,4 +31,6 @@
     <string name="candidate_picture">Candidate\'s picture</string>
     <string name="no_image_available">No image available</string>
     <string name="issue_future_date">You cannot pick a date in the future</string>
+    <string name="mandatory_field">Mandatory field</string>
+    <string name="invalid_format">Invalid format</string>
 </resources>

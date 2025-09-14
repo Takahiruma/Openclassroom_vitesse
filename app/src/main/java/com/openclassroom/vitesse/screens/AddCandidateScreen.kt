@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -72,9 +72,6 @@ import androidx.compose.ui.unit.dp
 import com.openclassroom.vitesse.R
 import com.openclassroom.vitesse.data.Candidate
 import com.openclassroom.vitesse.data.CandidateData
-import com.openclassroom.vitesse.ui.theme.Error
-import com.openclassroom.vitesse.ui.theme.Primary
-import com.openclassroom.vitesse.ui.theme.WhiteOnPrimary
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -118,7 +115,7 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
     val dateOfBirthErrorMessage = remember { mutableStateOf("") }
 
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.background(Color.White),
         topBar = {
             TopAppBar(
                 title = {
@@ -169,15 +166,15 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
                     }
                 },
 
-                containerColor = Primary,
-                contentColor = WhiteOnPrimary,
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor =  MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(40.dp),
                 content = {
                     Text(
                         text = stringResource(R.string.action_save),
-                        color = WhiteOnPrimary,
+                        color = MaterialTheme.colorScheme.onPrimary,
                         style = MaterialTheme.typography.labelLarge
                     )
                 }
@@ -482,16 +479,16 @@ fun CreateCandidate(
                     .clickable { focusRequester.requestFocus() },
                 isError = isError,
                 colors = OutlinedTextFieldDefaults.colors(
-                    errorBorderColor = Error,
-                    errorTrailingIconColor = Error,
-                    errorCursorColor = Error,
-                    errorLabelColor = Error
+                    errorBorderColor = MaterialTheme.colorScheme.error,
+                    errorTrailingIconColor = MaterialTheme.colorScheme.error,
+                    errorCursorColor = MaterialTheme.colorScheme.error,
+                    errorLabelColor = MaterialTheme.colorScheme.error
                 )
             )
             if (isError && errorMessage.isNotEmpty()) {
                 Text(
                     text = errorMessage,
-                    color = Error,
+                    color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(start = 4.dp, top = 4.dp)
                 )
@@ -545,16 +542,16 @@ fun CreateCandidate(
                         .clickable { focusRequester.requestFocus() },
                     isError = isError,
                     colors = OutlinedTextFieldDefaults.colors(
-                        errorBorderColor = Error,
-                        errorTrailingIconColor = Error,
-                        errorCursorColor = Error,
-                        errorLabelColor = Error
+                        errorBorderColor = MaterialTheme.colorScheme.error,
+                        errorTrailingIconColor = MaterialTheme.colorScheme.error,
+                        errorCursorColor = MaterialTheme.colorScheme.error,
+                        errorLabelColor = MaterialTheme.colorScheme.error
                     )
                 )
                 if (isError && errorMessage.isNotEmpty()) {
                     Text(
                         text = errorMessage,
-                        color = Error,
+                        color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(start = 4.dp, top = 4.dp)
                     )
@@ -679,16 +676,16 @@ fun CreateCandidate(
                     isError = dateOfBirthError.value,
                     placeholder = {Text("jj/mm/aaaa")},
                     colors = OutlinedTextFieldDefaults.colors(
-                        errorBorderColor = Error,
-                        errorTrailingIconColor = Error,
-                        errorCursorColor = Error,
-                        errorLabelColor = Error
+                        errorBorderColor = MaterialTheme.colorScheme.error,
+                        errorTrailingIconColor = MaterialTheme.colorScheme.error,
+                        errorCursorColor = MaterialTheme.colorScheme.error,
+                        errorLabelColor = MaterialTheme.colorScheme.error
                     )
                 )
                 if (dateOfBirthError.value && dateOfBirthErrorMessage.value.isNotEmpty()) {
                     Text(
                         text = dateOfBirthErrorMessage.value,
-                        color = Error,
+                        color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.padding(start = 4.dp, top = 4.dp)
                     )

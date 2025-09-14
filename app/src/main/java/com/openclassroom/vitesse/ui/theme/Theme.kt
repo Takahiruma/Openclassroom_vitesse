@@ -14,7 +14,8 @@ private val LightColorScheme = lightColorScheme(
     surface = Surface,
     onSurface = OnSurface,
     onSurfaceVariant = OnSurfaceVariant,
-    surfaceContainerHigh = SurfaceContainerHigh
+    surfaceContainerHigh = SurfaceContainerHigh,
+    error = Error
 )
 
 @Composable

@@ -105,7 +105,7 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onSaveClick = { candidate ->
                                     try {
-                                        viewModel.addCandidate(candidate)
+                                        viewModel.addOrUpdateCandidate(candidate)
                                         navController.popBackStack()
                                     } catch (e: Exception) {
                                         Log.e("SaveError", "Erreur lors de la sauvegarde: ", e)

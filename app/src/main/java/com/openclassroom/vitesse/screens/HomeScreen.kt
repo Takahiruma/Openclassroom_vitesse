@@ -1,47 +1,42 @@
 package com.openclassroom.vitesse.screens
 
-import android.graphics.BitmapFactory
-import android.net.Uri
-import android.util.Log
+import CandidateViewModel
 import androidx.compose.ui.graphics.Color
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.openclassroom.vitesse.data.Candidate
 import com.openclassroom.vitesse.ui.theme.VitesseTheme
 import com.openclassroom.vitesse.data.CandidateData
-import java.time.LocalDate
 import com.openclassroom.vitesse.data.HomeTab
-import java.util.Calendar
 import com.openclassroom.vitesse.R
+import com.openclassroom.vitesse.utils.CandidateImage
 
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(viewModel: CandidateViewModel = viewModel (),
+               onCandidateClick: (String) -> Unit) {
     var selectedTab by remember { mutableStateOf(HomeTab.ALL) }
     var searchQuery by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
 
-    Box(modifier = Modifier.fillMaxSize().statusBarsPadding().background(Color.White)) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .statusBarsPadding()
+        .background(Color.White)) {
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
@@ -85,16 +80,17 @@ fun HomeScreen() {
                         )
                     }
                 }
+                val candidates by viewModel.candidates.collectAsState()
 
-                val candidates = when (selectedTab) {
-                    HomeTab.ALL -> CandidateData.Candidates
-                    HomeTab.FAVORITE -> CandidateData.FavoriteCandidates
+                val filteredCandidates  = when (selectedTab) {
+                    HomeTab.ALL -> candidates
+                    HomeTab.FAVORITE -> candidates.filter { it.isFavorite }
                 }.filter {
                     it.firstName.contains(searchQuery, ignoreCase = true) ||
                             it.lastName.contains(searchQuery, ignoreCase = true)
                 }
 
-                CandidateList(candidates = candidates)
+                CandidateList(candidates = filteredCandidates, onCandidateClick = onCandidateClick)
             }
         }
     }
@@ -107,7 +103,9 @@ fun HomeScreen() {
 }
 
 @Composable
-fun CandidateList(candidates: List<Candidate>) {
+fun CandidateList(candidates: List<Candidate>,
+                  onCandidateClick: (String) -> Unit
+) {
     if (candidates.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -118,22 +116,23 @@ fun CandidateList(candidates: List<Candidate>) {
     } else {
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(candidates) { candidate ->
-                CandidateItem(candidate = candidate)
+                CandidateItem(candidate = candidate, onClick = { onCandidateClick(candidate.id.toString()) })
             }
         }
     }
 }
 
 @Composable
-fun CandidateItem(candidate: Candidate) {
+fun CandidateItem(candidate: Candidate, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(16.dp)
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        CandidateImage(photoUriString = candidate.photo)
+        CandidateImage(photoUriString = "file://${candidate.photo}" , modifier = Modifier.size(54.dp))
 
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
@@ -148,44 +147,13 @@ fun CandidateItem(candidate: Candidate) {
     }
 }
 
-@Composable
-fun CandidateImage(photoUriString: String) {
-    val context = LocalContext.current
-    val bitmap = remember(photoUriString) {
-        try {
-            if (photoUriString.isNotEmpty()) {
-                val uri = Uri.parse(photoUriString)
-                context.contentResolver.openInputStream(uri).use { stream ->
-                    BitmapFactory.decodeStream(stream)
-                }
-            } else null
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
 
-    if (bitmap != null) {
-        Image(
-            bitmap = bitmap.asImageBitmap(),
-            contentDescription = "candidate picture",
-            modifier = Modifier.size(54.dp),
-            contentScale = ContentScale.Crop
-        )
-    } else {
-        Image(
-            painter = painterResource(R.drawable.no_image_available),
-            contentDescription = "No image",
-            modifier = Modifier.size(54.dp)
-        )
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
     VitesseTheme {
-        HomeScreen()
+        HomeScreen(onCandidateClick = {})
     }
 }
 
@@ -193,7 +161,8 @@ fun HomeScreenPreview() {
 @Composable
 fun CandidateListPreview() {
     VitesseTheme {
-        CandidateList(CandidateData.Candidates)
+        CandidateList(CandidateData.Candidates,
+            onCandidateClick = {})
     }
 }
 
@@ -211,7 +180,8 @@ fun CandidateItemPreview() {
                 email = "alice.dupont@example.com",
                 note = "Excellent profil",
                 salary = 50000.0,
-            )
+            ),
+            onClick = {}
         )
     }
 }

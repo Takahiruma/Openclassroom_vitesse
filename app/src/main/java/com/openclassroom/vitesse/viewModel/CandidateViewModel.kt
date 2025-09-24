@@ -1,3 +1,4 @@
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -22,7 +23,6 @@ class CandidateViewModel(
         private set
 
     init {
-        // Observe la liste des candidats depuis le repository
         viewModelScope.launch {
             repository.candidates.collectLatest {
                 _candidates.value = it
@@ -40,6 +40,26 @@ class CandidateViewModel(
 
     fun selectCandidate(candidate: Candidate?) {
         selectedCandidate = candidate
+    }
+
+    fun updateCandidate(candidate: Candidate) {
+        repository.updateCandidate(candidate)
+    }
+
+    fun addOrUpdateCandidate(candidate: Candidate) {
+        Log.d("CandidateViewModel", "candidate id=${candidate.id}")
+        val exists = _candidates.value.any { it.id == candidate.id }
+        if (exists) {
+            Log.d("CandidateViewModel", "Updating existing candidate with id=${candidate.id}")
+            updateCandidate(candidate)
+        } else {
+            Log.d("CandidateViewModel", "Adding new candidate with id=${candidate.id}")
+            addCandidate(candidate)
+        }
+    }
+
+    fun toggleFavorite(candidate: Candidate) {
+        repository.toggleFavorite(candidate)
     }
 }
 

@@ -20,4 +20,12 @@ interface CandidateApiService {
      * @param candidate Le candidat à supprimer
      */
     fun removeCandidate(candidate: Candidate)
+
+    /**
+     * Modifie un candidat
+     * @param candidate Le candidat à supprimer
+     */
+    fun updateCandidate(candidate: Candidate)
+
+    fun init()
 }

@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,10 +22,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -40,13 +39,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -55,10 +53,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -69,15 +66,16 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import com.openclassroom.vitesse.R
 import com.openclassroom.vitesse.data.Candidate
 import com.openclassroom.vitesse.data.CandidateData
-import java.io.File
-import java.io.FileOutputStream
+import com.openclassroom.vitesse.utils.LabelledIconTextField
+import com.openclassroom.vitesse.utils.LabelledTextField
+import com.openclassroom.vitesse.utils.saveImageToInternalStorage
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
-import androidx.core.net.toUri
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -99,6 +97,10 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
     val note = rememberSaveable { mutableStateOf(candidate?.note ?: "") }
     val salary = rememberSaveable { mutableStateOf(candidate?.salary?.toString() ?: "") }
     val dateOfBirth = rememberSaveable { mutableStateOf(candidate?.dateOfBirth?.timeInMillis ?: 0L) }
+    val id = rememberSaveable { mutableStateOf(candidate?.id ?: 0) }
+    val isFavorite = rememberSaveable { mutableStateOf(candidate?.isFavorite ?: false) }
+
+    Log.d("AddCandidate", "Initialising id with value: ${candidate?.id}")
 
     val firstNameError = remember { mutableStateOf(false) }
     val lastNameError = remember { mutableStateOf(false) }
@@ -136,7 +138,7 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = {
-                    if (verifyAndCreateCandidate(
+                    if (verifyCandidate(
                             candidate,
                             photo.value, firstName.value, lastName.value, phoneNumber.value,
                             dateOfBirth.value, email.value, note.value, salary.value,
@@ -153,6 +155,7 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
                         photo.value = savedPhotoPath
 
                         val currentCandidate = Candidate(
+                            id = id.value,
                             photo = photo.value,
                             firstName = firstName.value,
                             lastName = lastName.value,
@@ -160,7 +163,8 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
                             email = email.value,
                             phoneNumber = phoneNumber.value,
                             note = note.value,
-                            salary = salary.value.toDoubleOrNull() ?: 0.0
+                            salary = salary.value.toDoubleOrNull() ?: 0.0,
+                            isFavorite = isFavorite.value
                         )
                         onSaveClick(currentCandidate)
                     }
@@ -216,26 +220,7 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
     }
 }
 
-fun saveImageToInternalStorage(context: Context, imageUri: Uri): String? {
-    return try {
-        val inputStream = context.contentResolver.openInputStream(imageUri)
-        val filename = "candidate_${System.currentTimeMillis()}.jpg"
-        val file = File(context.filesDir, filename)
-        val outputStream = FileOutputStream(file)
-
-        inputStream?.use { input ->
-            outputStream.use { output ->
-                input.copyTo(output)
-            }
-        }
-        file.absolutePath
-    } catch (e: Exception) {
-        e.printStackTrace()
-        null
-    }
-}
-
-fun verifyAndCreateCandidate(
+fun verifyCandidate(
     candidate: Candidate?,
     photo: String,
     firstName: String,
@@ -341,21 +326,6 @@ fun verifyAndCreateCandidate(
         return false
     }
 
-    candidate?.let {
-        CandidateData.Candidates.remove(it)
-    }
-    CandidateData.Candidates.add(
-        Candidate(
-            photo,
-            firstName,
-            lastName,
-            dateOfBirth,
-            phoneNumber,
-            email,
-            note,
-            candidateSalary
-        )
-    )
     return true
 }
 
@@ -450,116 +420,6 @@ fun CreateCandidate(
         }
     }
 
-    @Composable
-    fun LabelledTextField(
-        labelId: Int,
-        value: String,
-        onValueChange: (String) -> Unit,
-        keyboardType: KeyboardType = KeyboardType.Text,
-        singleLine: Boolean = true,
-        maxLines: Int = 1,
-        readOnly: Boolean = false,
-        trailingIcon: @Composable (() -> Unit)? = null,
-        isError: Boolean = false,
-        errorMessage: String = ""
-    ) {
-        val focusRequester = remember { FocusRequester() }
-        Column(modifier = Modifier.padding(top = 16.dp, start = 32.dp)) {
-            OutlinedTextField(
-                value = value,
-                onValueChange = onValueChange,
-                label = { Text(stringResource(id = labelId)) },
-                keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-                singleLine = singleLine,
-                maxLines = maxLines,
-                readOnly = readOnly,
-                trailingIcon = trailingIcon,
-                modifier = Modifier.fillMaxWidth()
-                    .focusRequester(focusRequester)
-                    .clickable { focusRequester.requestFocus() },
-                isError = isError,
-                colors = OutlinedTextFieldDefaults.colors(
-                    errorBorderColor = MaterialTheme.colorScheme.error,
-                    errorTrailingIconColor = MaterialTheme.colorScheme.error,
-                    errorCursorColor = MaterialTheme.colorScheme.error,
-                    errorLabelColor = MaterialTheme.colorScheme.error
-                )
-            )
-            if (isError && errorMessage.isNotEmpty()) {
-                Text(
-                    text = errorMessage,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(start = 4.dp, top = 4.dp)
-                )
-            }
-        }
-    }
-
-    @Composable
-    fun LabelledIconTextField(
-        labelId: Int,
-        icon: ImageVector,
-        value: String,
-        onValueChange: (String) -> Unit,
-        keyboardType: KeyboardType = KeyboardType.Text,
-        singleLine: Boolean = true,
-        maxLines: Int = 1,
-        readOnly: Boolean = false,
-        trailingIcon: @Composable (() -> Unit)? = null,
-        isError: Boolean = false,
-        errorMessage: String = ""
-    ) {
-        val focusRequester = remember { FocusRequester() }
-        Row(
-            modifier = Modifier.padding(top = 16.dp).fillMaxWidth(),
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = "Icon of " + stringResource(id = labelId),
-                modifier = Modifier.padding(end = 8.dp)
-                    .then(
-                        if (labelId == R.string.notes) Modifier else Modifier.align(Alignment.CenterVertically)
-                    ),
-            )
-            Column(modifier = Modifier.weight(1f)) {
-                OutlinedTextField(
-                    value = value,
-                    onValueChange = onValueChange,
-                    label = {
-                            Text(stringResource(id = labelId))
-                    },
-                    keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-                    singleLine = singleLine,
-                    maxLines = maxLines,
-                    readOnly = readOnly,
-                    trailingIcon = trailingIcon,
-                    modifier = Modifier.fillMaxWidth()
-                        .then(
-                        if (labelId == R.string.notes) Modifier.height(175.dp) else Modifier
-                        )
-                        .focusRequester(focusRequester)
-                        .clickable { focusRequester.requestFocus() },
-                    isError = isError,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        errorBorderColor = MaterialTheme.colorScheme.error,
-                        errorTrailingIconColor = MaterialTheme.colorScheme.error,
-                        errorCursorColor = MaterialTheme.colorScheme.error,
-                        errorLabelColor = MaterialTheme.colorScheme.error
-                    )
-                )
-                if (isError && errorMessage.isNotEmpty()) {
-                    Text(
-                        text = errorMessage,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(start = 4.dp, top = 4.dp)
-                    )
-                }
-            }
-        }
-    }
-
     Column(
         modifier = modifier
             .padding(bottom = 88.dp, top = 16.dp, start = 16.dp, end = 16.dp)
@@ -643,11 +503,12 @@ fun CreateCandidate(
                 Text(
                     text = stringResource(id = R.string.date_of_birth),
                     style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(top=16.dp).align(Alignment.Start)
+                    modifier = Modifier.padding(top=16.dp, start=24.dp).align(Alignment.Start)
                 )
                 Spacer(modifier = Modifier.height(36.dp))
                 Row(
                     modifier = Modifier
+                        .padding(start=24.dp, end=12.dp)
                         .fillMaxWidth()
                         .clickable { datePickerDialog.show() },
                     verticalAlignment = Alignment.CenterVertically,
@@ -670,7 +531,9 @@ fun CreateCandidate(
                     value = if (dateOfBirth > 0) SimpleDateFormat("dd/MM/yyyy").format(Date(dateOfBirth)) else "",
                     onValueChange = {},
                     readOnly = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .padding(start=24.dp, end=12.dp)
+                        .fillMaxWidth()
                         .focusRequester(focusRequester)
                         .clickable { focusRequester.requestFocus() },
                     isError = dateOfBirthError.value,
@@ -714,8 +577,6 @@ fun CreateCandidate(
         )
     }
 }
-
-
 
 @Preview(
     showBackground = true,

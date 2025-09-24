@@ -11,6 +11,7 @@ data class Candidate(
     val email: String,
     val note: String,
     val salary: Double,
+    val isFavorite: Boolean = false,
     val id: Int  = nextId()
 ){
     companion object {

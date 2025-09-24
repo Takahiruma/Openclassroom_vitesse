@@ -19,10 +19,15 @@
     <string name="salary">Prétention Salariales</string>
     <string name="date_of_birth">Sélectionner une date</string>
     <string name="enter_date_of_birth">Entrer une date</string>
+    <string name="mail_address">E-mail</string>
     <string name="add_candidate">Ajouter un candidat</string>
     <string name="candidate_picture">Photo du candidat</string>
     <string name="no_image_available">Pas d\'image disponible</string>
     <string name="issue_future_date">Vous ne pouvez pas choisir une date dans le futur</string>
     <string name="mandatory_field">Champs obligatoire</string>
     <string name="invalid_format">Format invalide</string>
+    <string name="birthday">Anniversaire</string>
+    <string name="about">A propos</string>
+    <string name="call">Appel</string>
+    <string name="favorite">Favoris</string>
 </resources>

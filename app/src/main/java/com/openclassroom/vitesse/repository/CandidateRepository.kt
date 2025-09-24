@@ -1,6 +1,7 @@
 package com.openclassroom.vitesse.repository
 
 import com.openclassroom.vitesse.data.Candidate
+import com.openclassroom.vitesse.data.CandidateData
 import com.openclassroom.vitesse.service.CandidateApiService
 import com.openclassroom.vitesse.service.LocalCandidateApiService
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +22,7 @@ open class CandidateRepository {
     open val candidates: StateFlow<List<Candidate>> = _candidates.asStateFlow()
 
     init {
+        candidateApiService.init()
         refreshCandidates()
     }
 
@@ -37,4 +39,24 @@ open class CandidateRepository {
         candidateApiService.removeCandidate(candidate)
         refreshCandidates()
     }
+
+    open fun updateCandidate(candidate: Candidate) {
+        candidateApiService.updateCandidate(candidate)
+        refreshCandidates()
+    }
+
+    open fun toggleFavorite(candidate: Candidate) {
+        val updatedList = _candidates.value.map {
+            if (it.id == candidate.id) {
+                val updatedCandidate = it.copy(isFavorite = !it.isFavorite)
+                candidateApiService.updateCandidate(updatedCandidate)
+                updatedCandidate
+            } else {
+                it
+            }
+        }
+        _candidates.value = updatedList
+        refreshCandidates()
+    }
+
 }

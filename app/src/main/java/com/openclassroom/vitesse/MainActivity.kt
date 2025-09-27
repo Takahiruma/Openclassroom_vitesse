@@ -1,6 +1,6 @@
 package com.openclassroom.vitesse
 
-import CandidateViewModel
+import com.openclassroom.vitesse.viewModel.CandidateViewModel
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity

@@ -2,7 +2,6 @@ package com.openclassroom.vitesse.screens
 
 import android.app.DatePickerDialog
 import android.content.Context
-import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
@@ -31,10 +30,11 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material3.Divider
+import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FabPosition
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +47,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -69,7 +71,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import com.openclassroom.vitesse.R
 import com.openclassroom.vitesse.data.Candidate
-import com.openclassroom.vitesse.data.CandidateData
+import com.openclassroom.vitesse.data.CandidateFormInput
+import com.openclassroom.vitesse.data.CandidateValidationErrors
 import com.openclassroom.vitesse.utils.LabelledIconTextField
 import com.openclassroom.vitesse.utils.LabelledTextField
 import com.openclassroom.vitesse.utils.saveImageToInternalStorage
@@ -96,8 +99,8 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
     val email = rememberSaveable { mutableStateOf(candidate?.email ?: "") }
     val note = rememberSaveable { mutableStateOf(candidate?.note ?: "") }
     val salary = rememberSaveable { mutableStateOf(candidate?.salary?.toString() ?: "") }
-    val dateOfBirth = rememberSaveable { mutableStateOf(candidate?.dateOfBirth?.timeInMillis ?: 0L) }
-    val id = rememberSaveable { mutableStateOf(candidate?.id ?: 0) }
+    val dateOfBirth = rememberSaveable { mutableLongStateOf(candidate?.dateOfBirth?.timeInMillis ?: 0L) }
+    val id = rememberSaveable { mutableIntStateOf(candidate?.id ?: 0) }
     val isFavorite = rememberSaveable { mutableStateOf(candidate?.isFavorite ?: false) }
 
     Log.d("AddCandidate", "Initialising id with value: ${candidate?.id}")
@@ -138,28 +141,30 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = {
-                    if (verifyCandidate(
-                            candidate,
-                            photo.value, firstName.value, lastName.value, phoneNumber.value,
-                            dateOfBirth.value, email.value, note.value, salary.value,
-                            firstNameError, lastNameError, phoneNumberError, emailError,
-                            salaryError, dateOfBirthError,
-                            firstNameErrorMessage, lastNameErrorMessage, phoneNumberErrorMessage,
-                            emailErrorMessage, salaryErrorMessage, dateOfBirthErrorMessage,
-                            context)
-                    ) {
+                    val input = CandidateFormInput(
+                        photo.value, firstName.value, lastName.value, phoneNumber.value,
+                        dateOfBirth.longValue, email.value, note.value, salary.value
+                    )
+                    val errors = CandidateValidationErrors(
+                        firstNameError, lastNameError, phoneNumberError, emailError,
+                        salaryError, dateOfBirthError,
+                        firstNameErrorMessage, lastNameErrorMessage, phoneNumberErrorMessage,
+                        emailErrorMessage, salaryErrorMessage, dateOfBirthErrorMessage
+                    )
+
+                    if (verifyCandidate( input, errors, context)) {
                         val savedPhotoPath = photo.value.let { uriString ->
-                            val uri = Uri.parse(uriString)
+                            val uri = uriString.toUri()
                             saveImageToInternalStorage(context, uri) ?: uriString
                         }
                         photo.value = savedPhotoPath
 
                         val currentCandidate = Candidate(
-                            id = id.value,
+                            id = id.intValue,
                             photo = photo.value,
                             firstName = firstName.value,
                             lastName = lastName.value,
-                            dateOfBirth = Calendar.getInstance().apply { timeInMillis = dateOfBirth.value },
+                            dateOfBirth = Calendar.getInstance().apply { timeInMillis = dateOfBirth.longValue },
                             email = email.value,
                             phoneNumber = phoneNumber.value,
                             note = note.value,
@@ -202,8 +207,8 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
             onNoteChanged = { note.value = it },
             salary = salary.value,
             onSalaryChanged = { salary.value = it },
-            dateOfBirth = dateOfBirth.value,
-            onDateOfBirthChanged = { dateOfBirth.value = it },
+            dateOfBirth = dateOfBirth.longValue,
+            onDateOfBirthChanged = { dateOfBirth.longValue = it },
             firstNameError = firstNameError,
             lastNameError = lastNameError,
             phoneNumberError = phoneNumberError,
@@ -221,105 +226,85 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
 }
 
 fun verifyCandidate(
-    candidate: Candidate?,
-    photo: String,
-    firstName: String,
-    lastName: String,
-    phoneNumber: String,
-    dateOfBirthMillis: Long,
-    email: String,
-    note: String,
-    salary: String,
-    firstNameError: MutableState<Boolean>,
-    lastNameError: MutableState<Boolean>,
-    phoneNumberError: MutableState<Boolean>,
-    emailError: MutableState<Boolean>,
-    salaryError: MutableState<Boolean>,
-    dateOfBirthError: MutableState<Boolean>,
-    firstNameErrorMessage: MutableState<String>,
-    lastNameErrorMessage: MutableState<String>,
-    phoneNumberErrorMessage: MutableState<String>,
-    emailErrorMessage: MutableState<String>,
-    salaryErrorMessage: MutableState<String>,
-    dateOfBirthErrorMessage: MutableState<String>,
+    form: CandidateFormInput,
+    errors: CandidateValidationErrors,
     context: Context
 ): Boolean {
-    firstNameError.value = false
-    lastNameError.value = false
-    phoneNumberError.value = false
-    emailError.value = false
-    salaryError.value = false
-    dateOfBirthError.value = false
+    errors.firstNameError.value = false
+    errors.lastNameError.value = false
+    errors.phoneNumberError.value = false
+    errors.emailError.value = false
+    errors.salaryError.value = false
+    errors.dateOfBirthError.value = false
 
     var isValid = true
 
-    if (firstName.isBlank()) {
-        firstNameError.value = true
-        firstNameErrorMessage.value = context.getString(R.string.mandatory_field)
+    if (form.firstName.isBlank()) {
+        errors.firstNameError.value = true
+        errors.firstNameErrorMessage.value = context.getString(R.string.mandatory_field)
         isValid = false
     }
 
-    if (lastName.isBlank()) {
-        lastNameError.value = true
-        lastNameErrorMessage.value = context.getString(R.string.mandatory_field)
+    if (form.lastName.isBlank()) {
+        errors.lastNameError.value = true
+        errors.lastNameErrorMessage.value = context.getString(R.string.mandatory_field)
         isValid = false
     }
 
-    if (phoneNumber.isBlank()) {
-        phoneNumberError.value = true
-        phoneNumberErrorMessage.value = context.getString(R.string.mandatory_field)
+    if (form.phoneNumber.isBlank()) {
+        errors.phoneNumberError.value = true
+        errors.phoneNumberErrorMessage.value = context.getString(R.string.mandatory_field)
         isValid = false
     } else {
         val phoneRegex = Regex("^(0|\\+33|0033)[1-9](\\d{2}){4}$")
-        val normalizedPhone = phoneNumber.replace("[\\s.-]".toRegex(), "")
+        val normalizedPhone = form.phoneNumber.replace("[\\s.-]".toRegex(), "")
         if (!phoneRegex.matches(normalizedPhone)) {
-            phoneNumberError.value = true
-            phoneNumberErrorMessage.value = context.getString(R.string.invalid_format)
+            errors.phoneNumberError.value = true
+            errors.phoneNumberErrorMessage.value = context.getString(R.string.invalid_format)
             isValid = false
         }
     }
 
     val dateOfBirth: Calendar = Calendar.getInstance()
-    if (dateOfBirthMillis <= 0) {
-        dateOfBirthError.value = true
-        dateOfBirthErrorMessage.value = context.getString(R.string.mandatory_field)
+    if (form.dateOfBirthMillis <= 0) {
+        errors.dateOfBirthError.value = true
+        errors.dateOfBirthErrorMessage.value = context.getString(R.string.mandatory_field)
         isValid = false
     } else {
-        dateOfBirth.timeInMillis = dateOfBirthMillis
+        dateOfBirth.timeInMillis = form.dateOfBirthMillis
         val currentDate = Calendar.getInstance()
         if (dateOfBirth.timeInMillis > currentDate.timeInMillis) {
-            dateOfBirthError.value = true
-            dateOfBirthErrorMessage.value = context.getString(R.string.issue_future_date)
+            errors.dateOfBirthError.value = true
+            errors.dateOfBirthErrorMessage.value = context.getString(R.string.issue_future_date)
             isValid = false
         }
     }
 
-    if (email.isBlank()) {
-        emailError.value = true
-        emailErrorMessage.value = context.getString(R.string.mandatory_field)
+    if (form.email.isBlank()) {
+        errors.emailError.value = true
+        errors.emailErrorMessage.value = context.getString(R.string.mandatory_field)
         isValid = false
     } else {
         val emailPattern = Regex("^[\\w\\-.]+@[\\w\\-.]+\\.[a-zA-Z]{2,}$")
-        if (!email.matches(emailPattern)) {
-            emailError.value = true
-            emailErrorMessage.value = context.getString(R.string.invalid_format)
+        if (!form.email.matches(emailPattern)) {
+            errors.emailError.value = true
+            errors.emailErrorMessage.value = context.getString(R.string.invalid_format)
             isValid = false
         }
     }
 
     var candidateSalary: Double
     try {
-        candidateSalary = salary.toDouble()
+        candidateSalary = form.salary.toDouble()
         if (candidateSalary < 0) {
-            salaryError.value = true
-            salaryErrorMessage.value = context.getString(R.string.mandatory_field)
+            errors.salaryError.value = true
+            errors.salaryErrorMessage.value = context.getString(R.string.mandatory_field)
             isValid = false
         }
     } catch (e: NumberFormatException) {
-        salaryError.value = true
-        salaryErrorMessage.value = context.getString(R.string.mandatory_field)
+        errors.salaryError.value = true
+        errors.salaryErrorMessage.value = context.getString(R.string.mandatory_field)
         isValid = false
-        candidateSalary = 0.0
     }
 
     return isValid
@@ -520,7 +505,7 @@ fun CreateCandidate(
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Divider()
+                HorizontalDivider(Modifier, DividerDefaults.Thickness, DividerDefaults.color)
                 Spacer(modifier = Modifier.height(8.dp))
                 val focusRequester = remember { FocusRequester() }
                 OutlinedTextField(

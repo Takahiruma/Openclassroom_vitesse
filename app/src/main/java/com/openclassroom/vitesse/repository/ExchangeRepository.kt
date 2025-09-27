@@ -1,6 +1,5 @@
 package com.openclassroom.vitesse.repository
 
-import com.openclassroom.vitesse.data.CurrencyList
 import com.openclassroom.vitesse.data.ExchangeRatesResponse
 import com.openclassroom.vitesse.service.ExchangeApiService
 import retrofit2.Retrofit
@@ -20,6 +19,5 @@ object RetrofitInstance {
 class ExchangeRepository {
     private val api = RetrofitInstance.api
 
-    suspend fun fetchCurrencies(): CurrencyList = api.getCurrencies()
     suspend fun fetchRates(currencyCode: String): ExchangeRatesResponse = api.getRates(currencyCode)
 }

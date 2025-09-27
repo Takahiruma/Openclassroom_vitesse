@@ -1,13 +1,11 @@
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+package com.openclassroom.vitesse.viewModel
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.openclassroom.vitesse.data.Candidate
 import com.openclassroom.vitesse.repository.CandidateRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class CandidateViewModel(
@@ -19,9 +17,6 @@ class CandidateViewModel(
 
     private val _isLoading = MutableStateFlow(true)
     val isLoading: StateFlow<Boolean> = _isLoading
-
-    var selectedCandidate by mutableStateOf<Candidate?>(null)
-        private set
 
     init {
         viewModelScope.launch {

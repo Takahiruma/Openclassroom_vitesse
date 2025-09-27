@@ -1,6 +1,5 @@
 package com.openclassroom.vitesse.viewModel
 
-import CandidateViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.openclassroom.vitesse.repository.CandidateRepository

@@ -1,6 +1,6 @@
 package com.openclassroom.vitesse.screens
 
-import CandidateViewModel
+import com.openclassroom.vitesse.viewModel.CandidateViewModel
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -135,7 +135,7 @@ fun CandidateItem(candidate: Candidate, onClick: () -> Unit) {
                 style = MaterialTheme.typography.titleMedium
             )
             Text(
-                text = "${candidate.note}",
+                text = candidate.note,
                 style = MaterialTheme.typography.bodyMedium
             )
         }

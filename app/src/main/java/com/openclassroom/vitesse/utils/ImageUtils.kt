@@ -4,20 +4,18 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import com.openclassroom.vitesse.R
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import androidx.core.net.toUri
 
 @Composable
 fun CandidateImage(photoUriString: String, modifier: Modifier) {
@@ -25,7 +23,7 @@ fun CandidateImage(photoUriString: String, modifier: Modifier) {
     val bitmap = remember(photoUriString) {
         try {
             if (photoUriString.isNotEmpty()) {
-                val uri = Uri.parse(photoUriString)
+                val uri = photoUriString.toUri()
                 if (uri.scheme == "file") {
                     val file = File(uri.path!!)
                     if (file.exists()) {

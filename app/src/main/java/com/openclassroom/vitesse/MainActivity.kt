@@ -27,14 +27,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.openclassroom.vitesse.data.Candidate
-import com.openclassroom.vitesse.data.CandidateData
+import com.openclassroom.vitesse.data.CandidateDatabase
 import com.openclassroom.vitesse.repository.CandidateRepository
 import com.openclassroom.vitesse.screens.AddCandidateScreen
 import com.openclassroom.vitesse.screens.DetailsCandidateScreen
 import com.openclassroom.vitesse.screens.HomeScreen
 import com.openclassroom.vitesse.ui.theme.VitesseTheme
 import com.openclassroom.vitesse.viewModel.CandidateViewModelFactory
+import com.openclassroom.vitesse.viewModel.ExchangeViewModel
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -45,9 +45,13 @@ class MainActivity : ComponentActivity() {
         setContent {
             VitesseTheme {
                 val navController = rememberNavController()
+                val database = CandidateDatabase.getDatabase(applicationContext)
+                val candidateDao = database.candidateDao()
+
                 val viewModel: CandidateViewModel = viewModel(
-                    factory = CandidateViewModelFactory(CandidateRepository())
+                    factory = CandidateViewModelFactory(CandidateRepository(candidateDao))
                 )
+                val exchangeViewModel: ExchangeViewModel = viewModel()
                 val currentBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = currentBackStackEntry?.destination
 
@@ -126,12 +130,18 @@ class MainActivity : ComponentActivity() {
 
                             DetailsCandidateScreen(
                                 candidate = candidate,
+                                exchangeViewModel = exchangeViewModel,
                                 onBackClick = { navController.popBackStack() },
                                 onEditClick = { navController.navigate("addCandidateScreen/${candidate?.id}") },
                                 onFavoriteToggle = { candidate ->
                                     viewModel.toggleFavorite(candidate)
                                 },
-                                onDeleteClick = {  }
+                                onDeleteClick = {
+                                    candidate?.let {
+                                        viewModel.removeCandidate(it)
+                                        navController.popBackStack()
+                                    }
+                                }
                             )
                         }
                     }

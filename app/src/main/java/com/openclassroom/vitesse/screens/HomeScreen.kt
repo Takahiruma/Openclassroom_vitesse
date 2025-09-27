@@ -24,6 +24,7 @@ import com.openclassroom.vitesse.data.CandidateData
 import com.openclassroom.vitesse.data.HomeTab
 import com.openclassroom.vitesse.R
 import com.openclassroom.vitesse.utils.CandidateImage
+import com.openclassroom.vitesse.utils.createCalendar
 
 
 @Composable
@@ -31,7 +32,7 @@ fun HomeScreen(viewModel: CandidateViewModel = viewModel (),
                onCandidateClick: (String) -> Unit) {
     var selectedTab by remember { mutableStateOf(HomeTab.ALL) }
     var searchQuery by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(true) }
+    val isLoading by viewModel.isLoading.collectAsState()
 
     Box(modifier = Modifier
         .fillMaxSize()
@@ -94,12 +95,6 @@ fun HomeScreen(viewModel: CandidateViewModel = viewModel (),
             }
         }
     }
-
-    LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(2000)
-        isLoading = false
-    }
-
 }
 
 @Composable
@@ -176,7 +171,7 @@ fun CandidateItemPreview() {
                 firstName = "Alice",
                 lastName = "Dupont",
                 phoneNumber = "0612345678",
-                dateOfBirth = CandidateData.createCalendar(1990, 5, 15),
+                dateOfBirth = createCalendar(1990, 5, 15),
                 email = "alice.dupont@example.com",
                 note = "Excellent profil",
                 salary = 50000.0,

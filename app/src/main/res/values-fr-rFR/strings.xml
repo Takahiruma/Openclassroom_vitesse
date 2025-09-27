@@ -30,4 +30,8 @@
     <string name="about">A propos</string>
     <string name="call">Appel</string>
     <string name="favorite">Favoris</string>
+    <string name="deletion">Suppression</string>
+    <string name="confirm_message">Etes-vous sûr de vouloir supprimer ce candidat? Cette action est irréversible.</string>
+    <string name="confirm">Confirmer</string>
+    <string name="cancel">Annuler</string>
 </resources>

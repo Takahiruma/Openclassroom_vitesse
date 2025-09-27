@@ -86,7 +86,7 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
                        onSaveClick:(Candidate) -> Unit
 ){
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
+    rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
     val photo = rememberSaveable { mutableStateOf(candidate?.photo ?: "") }
@@ -322,11 +322,7 @@ fun verifyCandidate(
         candidateSalary = 0.0
     }
 
-    if (!isValid) {
-        return false
-    }
-
-    return true
+    return isValid
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -1,62 +1,39 @@
 package com.openclassroom.vitesse.repository
 
 import com.openclassroom.vitesse.data.Candidate
-import com.openclassroom.vitesse.data.CandidateData
-import com.openclassroom.vitesse.service.CandidateApiService
-import com.openclassroom.vitesse.service.LocalCandidateApiService
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import com.openclassroom.vitesse.data.CandidateDao
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import com.openclassroom.vitesse.data.toDomain
+import com.openclassroom.vitesse.data.toEntity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-open class CandidateRepository {
+class CandidateRepository(private val candidateDao: CandidateDao) {
 
-    /**
-     * Le service API pour interagir avec les candidats.
-     */
-    private val candidateApiService: CandidateApiService = LocalCandidateApiService()
+    val candidates: Flow<List<Candidate>> = candidateDao.getAllCandidates()
+        .map { list -> list.map { it.toDomain() } }
 
-    /**
-     * Flow émettant la liste des candidats.
-     */
-    private val _candidates = MutableStateFlow<List<Candidate>>(emptyList())
-    open val candidates: StateFlow<List<Candidate>> = _candidates.asStateFlow()
-
-    init {
-        candidateApiService.init()
-        refreshCandidates()
-    }
-
-    private fun refreshCandidates() {
-        _candidates.value = candidateApiService.getAllCandidates().toList()
-    }
-
-    open fun addCandidate(candidate: Candidate) {
-        candidateApiService.addCandidate(candidate)
-        refreshCandidates()
-    }
-
-    open fun removeCandidate(candidate: Candidate) {
-        candidateApiService.removeCandidate(candidate)
-        refreshCandidates()
-    }
-
-    open fun updateCandidate(candidate: Candidate) {
-        candidateApiService.updateCandidate(candidate)
-        refreshCandidates()
-    }
-
-    open fun toggleFavorite(candidate: Candidate) {
-        val updatedList = _candidates.value.map {
-            if (it.id == candidate.id) {
-                val updatedCandidate = it.copy(isFavorite = !it.isFavorite)
-                candidateApiService.updateCandidate(updatedCandidate)
-                updatedCandidate
-            } else {
-                it
-            }
+    suspend fun addCandidate(candidate: Candidate) {
+        withContext(Dispatchers.IO) {
+            candidateDao.insertCandidate(candidate.toEntity())
         }
-        _candidates.value = updatedList
-        refreshCandidates()
     }
 
+    suspend fun removeCandidate(candidate: Candidate) {
+        withContext(Dispatchers.IO)
+        { candidateDao.deleteCandidate(candidate.toEntity()) }
+    }
+
+    suspend fun updateCandidate(candidate: Candidate) {
+        withContext(Dispatchers.IO)
+        { candidateDao.insertCandidate(candidate.toEntity()) }
+    }
+
+    suspend fun toggleFavorite(candidate: Candidate) {
+        withContext(Dispatchers.IO) {
+            val updatedCandidate = candidate.copy(isFavorite = !candidate.isFavorite)
+            updateCandidate(updatedCandidate)
+        }
+    }
 }

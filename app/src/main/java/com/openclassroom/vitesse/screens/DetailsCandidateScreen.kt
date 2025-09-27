@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Sms
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,12 +38,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,10 +57,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.openclassroom.vitesse.R
 import com.openclassroom.vitesse.data.Candidate
 import com.openclassroom.vitesse.ui.theme.VitesseTheme
 import com.openclassroom.vitesse.utils.CandidateImage
+import com.openclassroom.vitesse.viewModel.ExchangeViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -70,10 +77,19 @@ fun DetailsCandidateScreen(
     onBackClick: () -> Unit,
     onEditClick: () -> Unit,
     onFavoriteToggle: (Candidate) -> Unit,
-    onDeleteClick: () -> Unit, // TODO suppression
+    onDeleteClick: () -> Unit,
+    exchangeViewModel: ExchangeViewModel,
 ) {
-    val scope = rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
+    rememberCoroutineScope()
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    val conversionRate by exchangeViewModel.conversionRate.collectAsState()
+
+    LaunchedEffect(candidate) {
+        candidate?.let {
+            exchangeViewModel.loadConversionRate("eur", "gbp")
+        }
+    }
 
     Scaffold(
         modifier = modifier.background(Color.White),
@@ -104,13 +120,32 @@ fun DetailsCandidateScreen(
                             Icon(Icons.Default.Edit, contentDescription = "Modifier")
                         }
                         IconButton(onClick = {
-                            // TODO: implémenter la suppression
-                            onDeleteClick()
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Delete action TODO")
-                            }
+                            showDeleteDialog = true
                         }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Supprimer")
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.deletion))
+                        }
+
+                        if (showDeleteDialog) {
+                            AlertDialog(
+                                onDismissRequest = { showDeleteDialog = false },
+                                title = { Text(text = stringResource(R.string.deletion)) },
+                                text = { Text(text = stringResource(R.string.confirm_message)) },
+                                confirmButton = {
+                                    TextButton(onClick = {
+                                        showDeleteDialog = false
+                                        onDeleteClick()
+                                    }) {
+                                        Text(text = stringResource(R.string.confirm))
+                                    }
+                                },
+                                dismissButton = {
+                                    TextButton(onClick = {
+                                        showDeleteDialog = false
+                                    }) {
+                                        Text(text = stringResource(R.string.cancel))
+                                    }
+                                }
+                            )
                         }
                     }
                 }
@@ -127,6 +162,7 @@ fun DetailsCandidateScreen(
                     email = it.email,
                     note = it.note,
                     salary = it.salary.toString(),
+                    conversionRate = conversionRate,
                     dateOfBirth = it.dateOfBirth.timeInMillis
                 )
             }
@@ -144,10 +180,11 @@ fun DetailCandidate(
     email: String,
     note: String,
     salary: String,
+    conversionRate: Double,
     dateOfBirth: Long,
 ){
     val scrollState = rememberScrollState()
-    val context = LocalContext.current
+    LocalContext.current
 
     val dateFormatter = remember {
         SimpleDateFormat.getDateInstance(SimpleDateFormat.LONG, Locale.getDefault())
@@ -159,8 +196,8 @@ fun DetailCandidate(
             if (today.get(Calendar.DAY_OF_YEAR) < birthCalendar.get(Calendar.DAY_OF_YEAR)) 1 else 0
 
     val salaryEuro = salary.toDoubleOrNull() ?: 0.0
-    val conversionRate = 0.88
-    val salaryPound = (salaryEuro * conversionRate).let { String.format(Locale.getDefault(), "%.2f", it) }
+    val salaryPound = salaryEuro * conversionRate
+    val salaryPoundFormatted = String.format("%.2f", salaryPound)
 
     Column(
         modifier = modifier
@@ -220,7 +257,7 @@ fun DetailCandidate(
                     style = MaterialTheme.typography.bodyLarge
                 )
                 Text(
-                    text = "$salaryPound £",
+                    text = "$salaryPoundFormatted £",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall
                 )
@@ -326,6 +363,8 @@ fun ContactIconsRow(phoneNumber: String, emailAddress: String) {
 @Preview(showBackground = true)
 @Composable
 fun DetailsCandidateFavoriteScreenPreview() {
+    val exchangeViewModel: ExchangeViewModel = viewModel()
+
     val exampleCandidate = Candidate(
         id = 1,
         photo = "",
@@ -347,7 +386,8 @@ fun DetailsCandidateFavoriteScreenPreview() {
             onBackClick = {},
             onEditClick = {},
             onFavoriteToggle = {},
-            onDeleteClick = {}
+            onDeleteClick = {},
+            exchangeViewModel = exchangeViewModel,
         )
     }
 }
@@ -355,6 +395,8 @@ fun DetailsCandidateFavoriteScreenPreview() {
 @Preview(showBackground = true)
 @Composable
 fun DetailsCandidateScreenPreview() {
+    val exchangeViewModel: ExchangeViewModel = viewModel()
+
     val exampleCandidate = Candidate(
         id = 1,
         photo = "",
@@ -375,7 +417,8 @@ fun DetailsCandidateScreenPreview() {
             onBackClick = {},
             onEditClick = {},
             onFavoriteToggle = {},
-            onDeleteClick = {}
+            onDeleteClick = {},
+            exchangeViewModel = exchangeViewModel,
         )
     }
 }

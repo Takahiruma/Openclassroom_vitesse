@@ -12,13 +12,6 @@ data class Candidate(
     val note: String,
     val salary: Double,
     val isFavorite: Boolean = false,
-    val id: Int  = nextId()
-){
-    companion object {
-        private var lastId = 0
+    val id: Int = 0,
+)
 
-        private fun nextId(): Int {
-            return ++lastId
-        }
-    }
-}

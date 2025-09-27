@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -29,12 +30,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.openclassroom.vitesse.data.CandidateDatabase
 import com.openclassroom.vitesse.repository.CandidateRepository
+import com.openclassroom.vitesse.repository.ExchangeRepository
 import com.openclassroom.vitesse.screens.AddCandidateScreen
 import com.openclassroom.vitesse.screens.DetailsCandidateScreen
 import com.openclassroom.vitesse.screens.HomeScreen
 import com.openclassroom.vitesse.ui.theme.VitesseTheme
 import com.openclassroom.vitesse.viewModel.CandidateViewModelFactory
 import com.openclassroom.vitesse.viewModel.ExchangeViewModel
+import com.openclassroom.vitesse.viewModel.ExchangeViewModelFactory
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -51,7 +54,11 @@ class MainActivity : ComponentActivity() {
                 val viewModel: CandidateViewModel = viewModel(
                     factory = CandidateViewModelFactory(CandidateRepository(candidateDao))
                 )
-                val exchangeViewModel: ExchangeViewModel = viewModel()
+                val repository = remember { ExchangeRepository() }
+                val exchangeViewModel: ExchangeViewModel = viewModel(factory = ExchangeViewModelFactory(
+                    repository
+                )
+                )
                 val currentBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentDestination = currentBackStackEntry?.destination
 

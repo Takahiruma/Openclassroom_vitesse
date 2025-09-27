@@ -16,8 +16,8 @@ object RetrofitInstance {
     }
 }
 
-class ExchangeRepository {
+open class ExchangeRepository {
     private val api = RetrofitInstance.api
 
-    suspend fun fetchRates(currencyCode: String): ExchangeRatesResponse = api.getRates(currencyCode)
+    open suspend fun fetchRates(currencyCode: String): ExchangeRatesResponse = api.getRates(currencyCode)
 }

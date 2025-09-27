@@ -8,8 +8,8 @@ interface CandidateDao {
     fun getAllCandidates(): Flow<List<CandidateEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertCandidate(candidate: CandidateEntity)
+    suspend fun insertCandidate(candidate: CandidateEntity)
 
     @Delete
-    fun deleteCandidate(candidate: CandidateEntity)
+    suspend fun deleteCandidate(candidate: CandidateEntity)
 }

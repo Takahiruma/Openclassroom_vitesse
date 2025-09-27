@@ -4,14 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.openclassroom.vitesse.data.Candidate
 import com.openclassroom.vitesse.repository.CandidateRepository
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 class CandidateViewModel(
-    private val repository: CandidateRepository
+    private val repository: CandidateRepository,
+    scope: CoroutineScope? = null
 ) : ViewModel() {
-
+    private val actualScope = scope ?: viewModelScope
     private val _candidates = MutableStateFlow<List<Candidate>>(emptyList())
     val candidates: StateFlow<List<Candidate>> = _candidates
 
@@ -19,7 +21,7 @@ class CandidateViewModel(
     val isLoading: StateFlow<Boolean> = _isLoading
 
     init {
-        viewModelScope.launch {
+        actualScope.launch {
             _isLoading.value = true
             repository.candidates.collect { list ->
                 _candidates.value = list

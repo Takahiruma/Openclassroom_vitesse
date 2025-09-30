@@ -21,6 +21,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -67,10 +70,11 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(MaterialTheme.colorScheme.surfaceContainerHigh),
                     floatingActionButton = {
-                        Log.d("FloatingActionButton", "page ${currentDestination?.route} ")
                         if (currentDestination?.route == "home") {
                             FloatingActionButton(
-                                onClick = { navController.navigate("addCandidateScreen") }
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                onClick = { navController.navigate("addCandidateScreen") },
+                                modifier = Modifier.semantics { role = Role.Button }
                             ) {
                                 Icon(Icons.Default.Add, contentDescription = "Ajouter un candidat")
                             }

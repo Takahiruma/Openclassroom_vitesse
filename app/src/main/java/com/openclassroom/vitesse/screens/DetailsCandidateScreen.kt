@@ -52,6 +52,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -96,7 +99,7 @@ fun DetailsCandidateScreen(
                     Text(candidate?.firstName + " " + candidate?.lastName)
                 },
                 navigationIcon = {
-                    IconButton(onClick = { onBackClick() }) {
+                    IconButton(onClick = { onBackClick() }, modifier = Modifier.semantics { role = Role.Button }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
                     }
                 },
@@ -107,18 +110,22 @@ fun DetailsCandidateScreen(
                     candidate?.let {
                         IconButton(onClick = {
                             onFavoriteToggle(it)
-                        }) {
+                            },
+                            modifier = Modifier.semantics { role = Role.Button }
+                        ) {
                             Icon(
                                 imageVector = if (it.isFavorite) Icons.Filled.Star else ImageVector.vectorResource(id = R.drawable.outline_star),
                                 contentDescription = stringResource(id = R.string.favorite)
                             )
                         }
-                        IconButton(onClick = onEditClick) {
+                        IconButton(onClick = onEditClick, modifier = Modifier.semantics { role = Role.Button }) {
                             Icon(Icons.Default.Edit, contentDescription = "Modifier")
                         }
                         IconButton(onClick = {
                             showDeleteDialog = true
-                        }) {
+                            },
+                            modifier = Modifier.semantics { role = Role.Button }
+                        ) {
                             Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.deletion))
                         }
 
@@ -131,14 +138,18 @@ fun DetailsCandidateScreen(
                                     TextButton(onClick = {
                                         showDeleteDialog = false
                                         onDeleteClick()
-                                    }) {
+                                        },
+                                        modifier = Modifier.semantics { role = Role.Button }
+                                    ) {
                                         Text(text = stringResource(R.string.confirm))
                                     }
                                 },
                                 dismissButton = {
                                     TextButton(onClick = {
                                         showDeleteDialog = false
-                                    }) {
+                                        },
+                                        modifier = Modifier.semantics { role = Role.Button }
+                                    ) {
                                         Text(text = stringResource(R.string.cancel))
                                     }
                                 }
@@ -146,6 +157,13 @@ fun DetailsCandidateScreen(
                         }
                     }
                 }
+            )
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent)
             )
         },
         content = { paddingValues ->
@@ -338,6 +356,7 @@ fun ContactIconsRow(phoneNumber: String, emailAddress: String) {
                             color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
                             shape = CircleShape
                         )
+                        .semantics { role = Role.Button }
                 ) {
                     Icon(
                         icon,

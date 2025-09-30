@@ -34,4 +34,5 @@
     <string name="confirm_message">Etes-vous sûr de vouloir supprimer ce candidat? Cette action est irréversible.</string>
     <string name="confirm">Confirmer</string>
     <string name="cancel">Annuler</string>
+    <string name="open_date_picker">Ovrir le selecteur de date</string>
 </resources>

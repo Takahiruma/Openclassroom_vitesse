@@ -41,8 +41,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -65,6 +63,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -90,7 +91,6 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
 ){
     val context = LocalContext.current
     rememberCoroutineScope()
-    val snackbarHostState = remember { SnackbarHostState() }
 
     val photo = rememberSaveable { mutableStateOf(candidate?.photo ?: "") }
     val firstName = rememberSaveable { mutableStateOf(candidate?.firstName ?: "") }
@@ -127,7 +127,7 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
                     Text(stringResource(R.string.add_candidate))
                 },
                 navigationIcon = {
-                    IconButton(onClick = { onBackClick() }) {
+                    IconButton(onClick = { onBackClick() }, modifier = Modifier.semantics { role = Role.Button }) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Retour")
                     }
                 },
@@ -136,7 +136,6 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
                     .background(MaterialTheme.colorScheme.surface),
             )
         },
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButtonPosition = FabPosition.Center,
         floatingActionButton = {
             ExtendedFloatingActionButton(
@@ -179,7 +178,8 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
                 contentColor =  MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(40.dp),
+                    .height(40.dp)
+                    .semantics { role = Role.Button },
                 content = {
                     Text(
                         text = stringResource(R.string.action_save),
@@ -188,7 +188,13 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
                     )
                 }
             )
-
+        },
+        bottomBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent)
+            )
         }
     ) { contentPadding ->
         CreateCandidate(
@@ -255,14 +261,6 @@ fun verifyCandidate(
         errors.phoneNumberError.value = true
         errors.phoneNumberErrorMessage.value = context.getString(R.string.mandatory_field)
         isValid = false
-    } else {
-        val phoneRegex = Regex("^(0|\\+33|0033)[1-9](\\d{2}){4}$")
-        val normalizedPhone = form.phoneNumber.replace("[\\s.-]".toRegex(), "")
-        if (!phoneRegex.matches(normalizedPhone)) {
-            errors.phoneNumberError.value = true
-            errors.phoneNumberErrorMessage.value = context.getString(R.string.invalid_format)
-            isValid = false
-        }
     }
 
     val dateOfBirth: Calendar = Calendar.getInstance()
@@ -472,7 +470,7 @@ fun CreateCandidate(
         ) {
             Icon(
                 imageVector = ImageVector.vectorResource(id = R.drawable.cake),
-                contentDescription = "cake",
+                contentDescription = "",
                 modifier = Modifier.padding(end = 8.dp),
             )
             Column(
@@ -491,7 +489,8 @@ fun CreateCandidate(
                     modifier = Modifier
                         .padding(start=24.dp, end=12.dp)
                         .fillMaxWidth()
-                        .clickable { datePickerDialog.show() },
+                        .clickable { datePickerDialog.show() }
+                        .semantics { role = Role.Button },
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -501,7 +500,7 @@ fun CreateCandidate(
                     )
                     Icon(
                         imageVector = ImageVector.vectorResource(id = R.drawable.calendar),
-                        contentDescription = null
+                        contentDescription = stringResource(R.string.open_date_picker)
                     )
                 }
                 Spacer(modifier = Modifier.height(8.dp))

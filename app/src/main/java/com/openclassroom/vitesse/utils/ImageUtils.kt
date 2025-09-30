@@ -16,35 +16,14 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import androidx.core.net.toUri
+import com.openclassroom.vitesse.data.BitmapLoader
+import com.openclassroom.vitesse.data.CandidateBitmapLoader
 
 @Composable
-fun CandidateImage(photoUriString: String, modifier: Modifier) {
+fun CandidateImage(photoUriString: String, modifier: Modifier, bitmapLoader: BitmapLoader = CandidateBitmapLoader()) {
     val context = LocalContext.current
     val bitmap = remember(photoUriString) {
-        try {
-            if (photoUriString.isNotEmpty()) {
-                val uri = photoUriString.toUri()
-                if (uri.scheme == "file") {
-                    val file = File(uri.path!!)
-                    if (file.exists()) {
-                        BitmapFactory.decodeStream(FileInputStream(file))
-                    } else {
-                        null
-                    }
-                } else if (uri.scheme == "content") {
-                    context.contentResolver.openInputStream(uri).use { stream ->
-                        BitmapFactory.decodeStream(stream)
-                    }
-                } else {
-                    null
-                }
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+        bitmapLoader.loadBitmap(photoUriString, context)
     }
 
     if (bitmap != null) {

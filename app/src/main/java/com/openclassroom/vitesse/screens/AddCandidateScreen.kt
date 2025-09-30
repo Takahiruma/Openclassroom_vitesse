@@ -2,8 +2,6 @@ package com.openclassroom.vitesse.screens
 
 import android.app.DatePickerDialog
 import android.content.Context
-import android.provider.MediaStore
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -74,6 +72,7 @@ import com.openclassroom.vitesse.R
 import com.openclassroom.vitesse.data.Candidate
 import com.openclassroom.vitesse.data.CandidateFormInput
 import com.openclassroom.vitesse.data.CandidateValidationErrors
+import com.openclassroom.vitesse.data.CandidateBitmapLoader
 import com.openclassroom.vitesse.utils.LabelledIconTextField
 import com.openclassroom.vitesse.utils.LabelledTextField
 import com.openclassroom.vitesse.utils.saveImageToInternalStorage
@@ -102,8 +101,6 @@ fun AddCandidateScreen(modifier: Modifier = Modifier,
     val dateOfBirth = rememberSaveable { mutableLongStateOf(candidate?.dateOfBirth?.timeInMillis ?: 0L) }
     val id = rememberSaveable { mutableIntStateOf(candidate?.id ?: 0) }
     val isFavorite = rememberSaveable { mutableStateOf(candidate?.isFavorite ?: false) }
-
-    Log.d("AddCandidate", "Initialising id with value: ${candidate?.id}")
 
     val firstNameError = remember { mutableStateOf(false) }
     val lastNameError = remember { mutableStateOf(false) }
@@ -350,13 +347,22 @@ fun CreateCandidate(
     }
 
     val photoUri = remember(photo) {
-        if (photo.isNotEmpty()) photo.toUri() else null
+        if (photo.isNotEmpty()) {
+            val uri = photo.toUri()
+            if (uri.scheme == null) {
+                "file://$photo".toUri()
+            } else {
+                uri
+            }
+        } else null
     }
 
+    val bitmapLoader = CandidateBitmapLoader()
+
     val bitmap = remember(photoUri) {
-        photoUri?.let {
+        photoUri?.let { uri ->
             try {
-                MediaStore.Images.Media.getBitmap(context.contentResolver, it)
+                bitmapLoader.loadBitmap(uri.toString(), context)
             } catch (e: Exception) {
                 e.printStackTrace()
                 null
@@ -412,7 +418,7 @@ fun CreateCandidate(
                     launcher.launch("image/*")
                 }
         ) {
-            if (bitmap != null) {
+            if (bitmap != null && photo.isNotEmpty()) {
                 Image(
                     bitmap = bitmap.asImageBitmap(),
                     contentDescription = stringResource(id = R.string.candidate_picture),

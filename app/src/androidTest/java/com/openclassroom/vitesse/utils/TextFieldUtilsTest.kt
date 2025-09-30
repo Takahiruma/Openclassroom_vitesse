@@ -4,6 +4,7 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import com.openclassroom.vitesse.R
 import org.junit.Rule
 import org.junit.Test
@@ -34,6 +35,9 @@ class LabelledTextFieldTest {
 
     @Test
     fun noErrorMessage_whenIsErrorFalse() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val labelText = context.getString(R.string.app_name)
+
         composeTestRule.setContent {
             LabelledTextField(
                 labelId = R.string.app_name,
@@ -46,7 +50,7 @@ class LabelledTextFieldTest {
         }
 
         composeTestRule.onNode(hasText("")).assertExists()
-        composeTestRule.onNodeWithText(R.string.app_name.toString()).assertExists()
+        composeTestRule.onNodeWithText(labelText).assertExists()
         composeTestRule.onNodeWithText("Champ obligatoire").assertDoesNotExist()
     }
 }
